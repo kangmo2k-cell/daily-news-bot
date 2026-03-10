@@ -22,8 +22,14 @@ class NewsAutomation:
         rss_url = f"https://news.google.com/rss/search?q={encoded_query}&hl=ko&gl=KR&ceid=KR:ko"
         try:
             feed = feedparser.parse(rss_url)
-            return [{"title": e.title.rsplit(" - ", 1)[0], "link": e.link, "source": e.title.rsplit(" - ", 1)[1] if " - " in e.title else "뉴스"} for e in feed.entries[:self.items_per_keyword]]
-        except: return []
+            articles = []
+            for e in feed.entries[:self.items_per_keyword]:
+                title = e.title.rsplit(" - ", 1)[0]
+                source = e.title.rsplit(" - ", 1)[1] if " - " in e.title else "뉴스"
+                articles.append({"title": title, "link": e.link, "source": source})
+            return articles
+        except:
+            return []
 
     def build_html(self, news_data):
         today = datetime.now().strftime("%Y년 %m월 %d일")
@@ -36,13 +42,15 @@ class NewsAutomation:
 
     def send_daily_email(self):
         all_news = {kw: self.fetch_news(kw) for kw in self.keywords}
-        subject_date = datetime.now().strftime("%m/%d")
+        current_date = datetime.now().strftime("%m/%d")
         msg = MIMEMultipart()
-        msg["Subject"] = f"[{subject_date}] 뉴스 리포트"
+        msg["Subject"] = f"[{current_date}] 뉴스 리포트"
         msg["From"] = self.sender_email
         msg["To"] = self.receiver_email
         msg.attach(MIMEText(self.build_html(all_news), "html"))
-        with smtplib.SMTP_SSL(self.smtp_host, self.smtp_port, context=ssl.create_default_context()) as server:
+        
+        context = ssl.create_default_context()
+        with smtplib.SMTP_SSL(self.smtp_host, self.smtp_port, context=context) as server:
             server.login(self.sender_email, self.sender_password)
             server.sendmail(self.sender_email, self.receiver_email, msg.as_string())
 
@@ -50,7 +58,7 @@ if __name__ == "__main__":
     user = os.getenv("SMTP_USER")
     pw = os.getenv("SMTP_PASS")
     if not user or not pw:
-        print("Error: SMTP_USER or SMTP_PASS not set in Secrets.")
+        print("Error: SMTP_USER or SMTP_PASS is missing in GitHub Secrets.")
     else:
         bot = NewsAutomation("smtp.gmail.com", 465, user, pw)
         bot.send_daily_email()
