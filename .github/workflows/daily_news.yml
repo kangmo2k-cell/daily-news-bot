@@ -2,8 +2,8 @@ name: Daily News Bot
 
 on:
   schedule:
-    - cron: '30 22 * * *' # 한국 시간 오전 7시 30분 (UTC 22:30)
-  workflow_dispatch: # 수동 실행 버튼 생성
+    - cron: '30 22 * * *' # 한국 시간 오전 7시 30분
+  workflow_dispatch: 
 
 jobs:
   build:
@@ -21,4 +21,3 @@ jobs:
           SMTP_USER: ${{ secrets.SMTP_USER }}
           SMTP_PASS: ${{ secrets.SMTP_PASS }}
         run: python news_bot.py
-"""
