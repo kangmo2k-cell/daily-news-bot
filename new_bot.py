@@ -36,14 +36,21 @@ class NewsAutomation:
 
     def send_daily_email(self):
         all_news = {kw: self.fetch_news(kw) for kw in self.keywords}
-        msg = MIMEMultipart(); msg['Subject'] = f"[{datetime.now().strftime('%m/%d')}] 뉴스 리포트"; msg['From'] = self.sender_email; msg['To'] = self.receiver_email
-        msg.attach(MIMEText(self.build_html(all_news), 'html'))
+        subject_date = datetime.now().strftime("%m/%d")
+        msg = MIMEMultipart()
+        msg["Subject"] = f"[{subject_date}] 뉴스 리포트"
+        msg["From"] = self.sender_email
+        msg["To"] = self.receiver_email
+        msg.attach(MIMEText(self.build_html(all_news), "html"))
         with smtplib.SMTP_SSL(self.smtp_host, self.smtp_port, context=ssl.create_default_context()) as server:
             server.login(self.sender_email, self.sender_password)
             server.sendmail(self.sender_email, self.receiver_email, msg.as_string())
 
 if __name__ == "__main__":
-    user = os.getenv('SMTP_USER')
-    pw = os.getenv('SMTP_PASS')
-    bot = NewsAutomation('smtp.gmail.com', 465, user, pw)
-    bot.send_daily_email()
+    user = os.getenv("SMTP_USER")
+    pw = os.getenv("SMTP_PASS")
+    if not user or not pw:
+        print("Error: SMTP_USER or SMTP_PASS not set in Secrets.")
+    else:
+        bot = NewsAutomation("smtp.gmail.com", 465, user, pw)
+        bot.send_daily_email()
