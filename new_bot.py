@@ -33,12 +33,13 @@ class NewsAutomation:
 
     def build_html(self, news_data):
         today = datetime.now().strftime("%Y년 %m월 %d일")
-        html = f'<div style="background-color: #020617; color: #f8fafc; padding: 30px;"><h1 style="color: #10b981;">KM TECH REPORT ({today})</h1>'
+        header = f'<div style="background-color: #020617; color: #f8fafc; padding: 30px;"><h1 style="color: #10b981;">KM TECH REPORT ({today})</h1>'
+        body = ""
         for kw, arts in news_data.items():
-            html += f'<h3 style="color: #10b981;">{kw}</h3>'
+            body += f'<h3 style="color: #10b981;">{kw}</h3>'
             for a in arts:
-                html += f'<p><a href="{a["link"]}" style="color: #f1f5f9;">· {a["title"]}</a> ({a["source"]})</p>'
-        return html + "</div>"
+                body += f'<p><a href="{a["link"]}" style="color: #f1f5f9;">· {a["title"]}</a> ({a["source"]})</p>'
+        return header + body + "</div>"
 
     def send_daily_email(self):
         all_news = {kw: self.fetch_news(kw) for kw in self.keywords}
